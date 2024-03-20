@@ -13,6 +13,7 @@ using System.CodeDom;
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
+using System.Xml.Linq;
 
 
 
@@ -21,69 +22,57 @@ namespace FastFoodNutritionAI
 {
     public partial class Form1 : Form
     {
+        private List<MenuItem> loadedMenuItems;
+        private ListBox lbResults;
+
+
         public Form1()
         {
             InitializeComponent();
-
-            loadMenuItems();
-           // var menuItems = loadMenuItems();
+            InitalizeControls();
+            loadedMenuItems = LoadMenuItems();
+            SetupGreedySearch();
         }
 
-        //each menu item, add or remove items whenver just change add the correct csv heading in the mapping function
-        public class MenuItem
+        private void InitalizeControls()
         {
-            public string Category { get; set; }
-            public string Item { get; set; }
-            public string ServingSize { get; set; }
-            public int Calories { get; set; }
-            public int TotalFat { get; set; }
-            public int SaturatedFat { get; set; }
-            public int TransFat { get; set; }
-            public int Cholesterol { get; set; }
-            public int Sodium { get; set; }
-            public int Carbohydrates { get; set; }
-            public int DietaryFiber { get; set; }
-            public int Sugar { get; set; }
-            public int Protein { get; set; }
-            public int Iron { get; set; }
-
-
+            lbResults = new ListBox { Location = new Point(50, 50), Size = new Size(300, 400) };
+            Controls.Add(lbResults);
         }
 
 
-        //Using a class map because our class doesnt match the header names and we cant write the classes in way we need
-
-        public sealed class MenuItemMap : ClassMap<MenuItem>
+        private void SetupGreedySearch()
         {
-            public MenuItemMap()
+            GreedySearch greedySearch = new GreedySearch(loadedMenuItems, 2000, HeuristicFunction, GoalTestFunction);
+            List<MenuItem> optimalMeal = greedySearch.findOptimalMeal();
+
+            // test remove after UI is built
+            foreach (var item in optimalMeal)
             {
-                Map(m => m.Category).Name("Category");
-                Map(m => m.Item).Name("Item");
-                Map(m => m.ServingSize).Name("Serving Size");
-                Map(m => m.Calories).Name("Calories");
-                Map(m => m.TotalFat).Name("Total Fat");
-                Map(m => m.SaturatedFat).Name("Saturated Fat");
-                Map(m => m.TransFat).Name("Trans Fat");
-                Map(m => m.Cholesterol).Name("Cholesterol");
-                Map(m => m.Sodium).Name("Sodium");
-                Map(m => m.Carbohydrates).Name("Carbohydrates");
-                Map(m => m.DietaryFiber).Name("Dietary Fiber");
-                Map(m => m.Sugar).Name("Sugars");
-                Map(m => m.Iron).Name("Iron (% Daily Value)");
-
-
+                lbResults.Items.Add($"{item.Item} - Calories: {item.Calories}, Protein: {item.Protein}");
             }
         }
 
-            private object loadMenuItems()
-            {
+        // heuristic function 
+        private double HeuristicFunction(MenuItem item)
+        {
+            //favouring items with more protien per calorie
+            return 1 / ((double)item.Calories / item.Protein);
+        }
 
+        // goaltest function 
+        private bool GoalTestFunction(Node node)
+        {
+            //check if dessert has been added
+            return node.Meal.Any(item => item.Category == "Dessert");
+        }
+
+
+        private List<MenuItem> LoadMenuItems()
+        {
             // file path from fastfoodnutrionAI->Data->menu.csv
             string filepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "FastFoodNutritionAI", "Data", "menu.csv");
-            filepath = Path.GetFullPath(filepath); 
-
-            // initilizinf empt list which will store menu items
-            List<MenuItem> data = new List<MenuItem>();
+            filepath = Path.GetFullPath(filepath);
 
             // try catch to handle errors
             try
@@ -102,32 +91,19 @@ namespace FastFoodNutritionAI
                 }))
                 {
                     //reading records from CSV file and and converting them to a list of objects
-                    data = csv.GetRecords<MenuItem>().ToList();
-
-                    if (data.Any())
-                    {
-                        Console.WriteLine("CSV file has been read successfully. Here are some loaded items:");
-                        // checking first couple of records 
-                        foreach (var item in data.Take(5)) 
-                        {
-                            Console.WriteLine($"Item: {item.Item}, Category: {item.Category}, Calories: {item.Calories}");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("No Items were loaded from the CSV file.");
-                    }
+                    return csv.GetRecords<MenuItem>().ToList();
                 }
-
             }
-            catch  (FileNotFoundException ex)
+            catch (Exception ex)
             {
-                Console.WriteLine($"The file was not found: '{ex.Message}'");
+                MessageBox.Show($"Failed to load menu items: {ex.Message}");
+                return new List<MenuItem>();
             }
-            return data; //returning list of menu items, will be empty if theres an error 
         }
-
-
-
     }
+
+
+
+
 }
+
