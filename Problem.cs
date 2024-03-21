@@ -196,7 +196,7 @@ namespace FastFoodNutritionAI
             //avoiding division by zero if protein is zero
             if (state.Protein <= 0)
             {
-                Console.WriteLine("Heuristic Function called with a state having zero protein.");
+                //Console.WriteLine("Heuristic Function called with a state having zero protein.");
                 return double.PositiveInfinity; //large number to indicate nonideal state
             }
 

@@ -40,7 +40,10 @@ namespace FastFoodNutritionAI
                     problem.goalStates.Add(item);
                 }
             }
-            Node resultNode = breadth_first_tree_search(problem);
+           //Node resultNode = breadth_first_tree_search(problem);
+           Node resultNode = GreedySearch(problem);
+
+
             // get the path from the result to the root node
             if (resultNode != null)
             {
@@ -83,49 +86,6 @@ namespace FastFoodNutritionAI
             return null;
         }
 
-
-
-        public void setUpGreedySearch()
-        {
-            loadedMenuItems = LoadMenuItems();
-            /*
-            // creating an initial state 
-            State initialState = new State
-            {
-                Category = "Breakfast", // Indicates no meal category selected yet
-    
-            };
-            */
-            root = new Node(null, 0, 0, null, null); // Initialise root node with a valid state
-
-            List<State> goals = new List<State>();
-            problem = new Problem(root.state, goals);
-
-            // Add each dessert item to the list of goal states
-            foreach (State item in loadedMenuItems)
-            {
-                if (item.Category == "Desserts")
-                {
-                    problem.goalStates.Add(item);
-                }
-            }
-
-            Node resultNode = GreedySearch(problem);
-
-            // Get the path from the result to the root node
-            if (resultNode != null)
-            {
-                List<Node> solution = resultNode.path();
-                Console.WriteLine("Solution");
-                foreach (Node node in solution)
-                {
-                    if (node.state != null)
-                    {
-                        Console.WriteLine("\n" + node.state.Item);
-                    }
-                }
-            }
-        }
 
         /**
          * Do greedy search

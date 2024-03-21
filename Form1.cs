@@ -33,8 +33,7 @@ namespace FastFoodNutritionAI
             //setUpSearch();
             //SetupGreedySearch();
             Search search = new Search();
-            search.setUpGreedySearch();
-            //search.setUpSearch();
+            search.setUpSearch();
 
 
 
