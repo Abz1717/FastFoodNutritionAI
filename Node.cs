@@ -26,7 +26,8 @@ namespace FastFoodNutritionAI
         // makes new node by adding menuitem to current meal, giving a new potential 
         public Node AddItem(MenuItem item)
         {
-            var newMeal = new List<MenuItem>(Meal) { item };   // list of menu items starting with items in current meal 
+            var newMeal = new List<MenuItem>(Meal) { item };  // list of menu items starting with items in current meal 
+            //var newTotalCalories = TotalCalories + item.Calories;
             return new Node(newMeal);
 
         }

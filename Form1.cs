@@ -30,8 +30,12 @@ namespace FastFoodNutritionAI
         {
             InitializeComponent();
             InitalizeControls();
+
             loadedMenuItems = LoadMenuItems();
             SetupGreedySearch();
+
+            this.Load += new EventHandler(Form1_Load);
+
         }
 
         private void InitalizeControls()
@@ -64,7 +68,7 @@ namespace FastFoodNutritionAI
         private bool GoalTestFunction(Node node)
         {
             //check if dessert has been added
-            return node.Meal.Any(item => item.Category == "Dessert");
+            return node.Meal.Any(item => item.Type == "Dessert");
         }
 
 
@@ -100,10 +104,14 @@ namespace FastFoodNutritionAI
                 return new List<MenuItem>();
             }
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+           
+        }
     }
 
 
 
 
 }
-

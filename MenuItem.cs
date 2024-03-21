@@ -10,10 +10,12 @@ namespace FastFoodNutritionAI
     //each menu item, add or remove items whenver just change add the correct csv heading in the mapping function
     public class MenuItem
     {
-        public string Category { get; set; }
+        public string Type { get; set; }
         public string Item { get; set; }
         public int Calories { get; set; }
         public int Protein { get; set; }
+
+        public string ID {  get; set; }
 
 
 
@@ -24,10 +26,13 @@ namespace FastFoodNutritionAI
     {
         public MenuItemMap()
         {
-            Map(m => m.Category).Name("Category");
+            Map(m => m.Type).Name("Type");
             Map(m => m.Item).Name("Item");
             Map(m => m.Calories).Name("Calories");
             Map(m => m.Protein).Name("Protein");
+            Map(m => m.Protein).Name("ID");
+
+
 
         }
     }
