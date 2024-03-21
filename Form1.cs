@@ -23,7 +23,7 @@ namespace FastFoodNutritionAI
     public partial class Form1 : Form
     {
         private ListBox lbResults;
-        
+
 
 
         public Form1()
@@ -33,7 +33,11 @@ namespace FastFoodNutritionAI
             //setUpSearch();
             //SetupGreedySearch();
             Search search = new Search();
-            search.setUpSearch();
+            search.setUpGreedySearch();
+            //search.setUpSearch();
+
+
+
         }
 
         private void InitalizeControls()
@@ -42,7 +46,7 @@ namespace FastFoodNutritionAI
             Controls.Add(lbResults);
         }
 
-        
+
 
 
         private void SetupGreedySearch()
@@ -57,16 +61,16 @@ namespace FastFoodNutritionAI
             }*/
         }
 
-        
+
 
         // goaltest function 
-       //private bool GoalTestFunction(Node node)
+        //private bool GoalTestFunction(Node node)
         //{
-            //check if dessert has been added
-            //return node.Meal.Any(item => item.Category == "Desserts");
+        //check if dessert has been added
+        //return node.Meal.Any(item => item.Category == "Desserts");
         //}
 
-        
+
     }
 
 
