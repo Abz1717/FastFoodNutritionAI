@@ -10,8 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Wintellect.PowerCollections;
 using static FastFoodNutritionAI.Node;
-
-
+using System.Security.Cryptography;
 
 namespace FastFoodNutritionAI
 {
@@ -46,18 +45,18 @@ namespace FastFoodNutritionAI
              * Search calls
              */
 
-            //Node resultNode = breadth_first_tree_search(problem);
+            //Node resultNode = breadth_first_graph_search(problem);
             int limit = 5;
-            Node resultNode = DepthLimitedSearch(root, problem, limit);
+            //Node resultNode = DepthLimitedSearch(root, problem, limit);
             //Node resultNode = GreedySearch(problem);
-           
+            Node resultNode = AStarSearch(problem);
 
 
             // get the path from the result to the root node
             if (resultNode != null)
             {
                 List<Node> solution = resultNode.path();
-                Console.WriteLine("Solution");
+                Console.WriteLine("Solution:");
                 foreach (Node node in solution)
                 {
                     if (node.state != null)
@@ -71,25 +70,40 @@ namespace FastFoodNutritionAI
 
         /*
          * Breadth first tree search
+         * non-optimal but complete solution
          */
-        public Node breadth_first_tree_search(Problem problem)
+        public Node breadth_first_graph_search(Problem problem)
         {
             Console.WriteLine("Breadth first tree search");
             Queue<Node> frontier = new Queue<Node>();
-            frontier.Enqueue(root);
+            List<State> explored = new List<State>();
 
+            Node node = root;
+            if (node.state != null && problem.goalTest(node.state) == true)
+            {
+                Console.WriteLine("Goal Reached: " + node.state.Item);
+                return node;
+            }
+            // if it is not a goal node, add it to the frontier
+            frontier.Enqueue(node);
             while (frontier.Count > 0)
             {
-                Node node = frontier.Dequeue();
-                if (problem.goalTest(node.state) == true)
-                {
-                    Console.WriteLine("Goal Reached: " + node.state.Item);
-                    return node;
-                }
+                node = frontier.Dequeue();
+                explored.Add(node.state);
                 // add all child nodes to the frontier
                 foreach (Node child in node.expand(problem))
                 {
-                    frontier.Enqueue(child);
+                    // check if the child has already been explored or is already on the frontier before adding 
+                    if (explored.Contains(child.state) == false && frontier.Contains(child) == false)
+                    {
+                        if (problem.goalTest(child.state) == true)
+                        {
+                            Console.WriteLine("Goal Reached: " + child.state.Item);
+                            return child;
+                        }
+                        frontier.Enqueue(child);
+                    }
+
                 }
             }
             return null;
@@ -144,17 +158,14 @@ namespace FastFoodNutritionAI
             }
         }
 
-
-        /**
-         * Do greedy search
-         */
-        public Node GreedySearch(Problem problem)
+        // search by choosing for the node with the lowest value of path cost to that node + estimated value from that node
+        private Node AStarSearch(Problem problem)
         {
             OrderedBag<NodePriorityPair> frontier = new OrderedBag<NodePriorityPair>();
             HashSet<State> explored = new HashSet<State>();
-            Console.WriteLine("Starting GreedySearch...");
+            Console.WriteLine("Starting AStarSearch...");
 
-            /*
+
             if (root.state == null)
             {
                 Console.WriteLine("Root node's state is null.");
@@ -165,11 +176,83 @@ namespace FastFoodNutritionAI
                 // Add the root node to the frontier with initial priority
                 // You need to define `root` and `problem.HeuristicFunction`
                 //Console.WriteLine($"Adding root node to frontier with priority {problem.HeuristicFunction(root.state)}.");
-                frontier.Add(new NodePriorityPair(root, problem.HeuristicFunction(root.state)));
+                frontier.Add(new NodePriorityPair(root, problem.HeuristicFunction(root) + root.pathCost));
             }
-            */
-            frontier.Add(new NodePriorityPair(root, problem.HeuristicFunction(root.state)));
 
+            frontier.Add(new NodePriorityPair(root, problem.HeuristicFunction(root)+root.pathCost));
+
+            while (frontier.Count > 0)
+            {
+                Console.WriteLine("Frontier count: " + frontier.Count);
+                // dequeu  node with highest priority - lowest num
+                NodePriorityPair currentPair = frontier.RemoveFirst();
+                Node currentNode = currentPair.Node;
+                //Console.WriteLine($"Exploring node: {currentNode.state.Item} with priority {currentPair.Priority}.");
+
+
+                if (problem.goalTest(currentNode.state))
+                {
+                    // Goal found
+                    Console.WriteLine("Goal found: " + currentNode.state.Item);
+                    return currentNode;
+                }
+
+                explored.Add(currentNode.state);
+
+                foreach (Node child in currentNode.expand(problem))
+                {
+                    if (child == null)
+                    {
+                        //Console.WriteLine("child is null in AStarSearch during expansion.");
+                        continue;
+                    }
+                    if (child.state == null)
+                    {
+                        //Console.WriteLine("Child state is null, skipping heuristic calculation and not adding to frontier.");
+                        continue;
+                    }
+                    // Console.WriteLine($"About to call HeuristicFunction with state: Item={child.state.Item}, Protein={child.state.Protein}, Calories={child.state.Calories}");
+
+                    // Console.WriteLine($"Expanding node: {currentNode.state.Item}, considering child: {child.state.Item}.");
+                    if (!explored.Contains(child.state) && !frontier.Any(np => np.Node.Equals(child)))
+                    {
+                        // add path cost for priority for A star
+                        double priority = problem.HeuristicFunction(child)+ child.pathCost;
+                        frontier.Add(new NodePriorityPair(child, priority));
+                    }
+                    // shouldnt be a need to check for updating nodes in the frontier with better paths,
+                    // as each node state is unique here.
+                }
+            }
+            Console.WriteLine("A* Search finished without finding a goal.");
+
+            return null;
+        }
+
+        /**
+         * Do greedy search
+         */
+        public Node GreedySearch(Problem problem)
+        {
+            OrderedBag<NodePriorityPair> frontier = new OrderedBag<NodePriorityPair>();
+            HashSet<State> explored = new HashSet<State>();
+            Console.WriteLine("Starting GreedySearch...");
+
+
+            if (root.state == null)
+            {
+                Console.WriteLine("Root node's state is null.");
+                // Initialize root.state or handle the error appropriately before proceeding
+            }
+            else
+            {
+                // Add the root node to the frontier with initial priority
+                // You need to define `root` and `problem.HeuristicFunction`
+                //Console.WriteLine($"Adding root node to frontier with priority {problem.HeuristicFunction(root.state)}.");
+                frontier.Add(new NodePriorityPair(root, problem.HeuristicFunction(root)));
+            }
+
+            frontier.Add(new NodePriorityPair(root, problem.HeuristicFunction(root)));
 
             while (frontier.Count > 0)
             {
@@ -201,12 +284,12 @@ namespace FastFoodNutritionAI
                         //Console.WriteLine("Child state is null, skipping heuristic calculation and not adding to frontier.");
                         continue;
                     }
-                   // Console.WriteLine($"About to call HeuristicFunction with state: Item={child.state.Item}, Protein={child.state.Protein}, Calories={child.state.Calories}");
+                    // Console.WriteLine($"About to call HeuristicFunction with state: Item={child.state.Item}, Protein={child.state.Protein}, Calories={child.state.Calories}");
 
-                   // Console.WriteLine($"Expanding node: {currentNode.state.Item}, considering child: {child.state.Item}.");
+                    // Console.WriteLine($"Expanding node: {currentNode.state.Item}, considering child: {child.state.Item}.");
                     if (!explored.Contains(child.state) && !frontier.Any(np => np.Node.Equals(child)))
                     {
-                        double priority = problem.HeuristicFunction(child.state);
+                        double priority = problem.HeuristicFunction(child);
                         frontier.Add(new NodePriorityPair(child, priority));
                     }
                     // shouldnt be a need to check for updating nodes in the frontier with better paths,
@@ -215,7 +298,7 @@ namespace FastFoodNutritionAI
             }
             Console.WriteLine("GreedySearch finished without finding a goal.");
 
-            return null; 
+            return null;
         }
 
         /*

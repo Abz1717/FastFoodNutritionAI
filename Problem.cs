@@ -54,7 +54,7 @@ namespace FastFoodNutritionAI
             {
                 foreach (State item in loadedMenuItems)
                 {
-                    if (item.Category == "Salads" || item.Category == "Beef & Pork" || item.Category == "Breakfast" || item.Category == "Chicken & Fish" && item.Calories != 0)
+                    if (item.Category == "Salads" || item.Category == "Beef & Pork" || item.Category == "Breakfast" || item.Category == "Chicken & Fish" || item.Category == "Snacks")
                     {
                         Action newAction = new Action(null, item);
                         possible_actions.Add(newAction);
@@ -68,13 +68,13 @@ namespace FastFoodNutritionAI
                     //Console.WriteLine(action.getResult().Item);
                 }
 
-            } 
+            }
             else if (state.Category == "Breakfast")
             {
                 foreach (State item in loadedMenuItems)
                 {
 
-                    if (item.Category == "Snacks & Sides" && item.Calories != 0)
+                    if (item.Category == "Beverages" || item.Category == "Coffee & Tea" || item.Category == "Smoothies")
                     {
                         Action newAction = new Action(state.Item, item);
 
@@ -82,12 +82,13 @@ namespace FastFoodNutritionAI
                     }
                 }
             }
-            else if (state.Category == "Salads" || state.Category == "Beef & Pork" || state.Category == "Chicken & Fish")
+            // main meals can either have a side or a drink as the next node
+            else if (state.Category == "Beef & Pork" || state.Category == "Chicken & Fish" || state.Category == "Snacks")
             {
                 foreach (State item in loadedMenuItems)
                 {
 
-                    if (item.Category == "Snacks & Sides" && item.Calories != 0)
+                    if (item.Category == "Sides" || state.Category == "Beverages" || state.Category == "Coffee & Tea" || state.Category == "Smoothies")
                     {
                         Action newAction = new Action(state.Item, item);
 
@@ -95,7 +96,21 @@ namespace FastFoodNutritionAI
                     }
                 }
             }
-            else if (state.Category == "Snacks & Sides")
+            else if (state.Category == "Salads")
+            {
+                foreach (State item in loadedMenuItems)
+                {
+
+                    if (item.Category == "Sides" || item.Category == "Beverages" || item.Category == "Coffee & Tea" || item.Category == "Smoothies")
+                    {
+                        Action newAction = new Action(state.Item, item);
+
+                        possible_actions.Add(newAction);
+                    }
+                }
+            }
+
+            else if (state.Category == "Sides")
             {
                 foreach (State item in loadedMenuItems)
                 {
@@ -108,7 +123,7 @@ namespace FastFoodNutritionAI
                     }
                 }
             }
-            else if (state.Category == "Beverages") // || state.Category == "Coffee & Tea" || state.Category == "Smoothies" )
+            else if (state.Category == "Beverages" || state.Category == "Coffee & Tea" || state.Category == "Smoothies")
             {
                 foreach (State item in loadedMenuItems)
                 {
@@ -125,7 +140,7 @@ namespace FastFoodNutritionAI
             {
                 // dessert state so no possible actions
             }
-            
+
             return possible_actions;
         }
 
@@ -173,16 +188,53 @@ namespace FastFoodNutritionAI
         }
 
         /*
-         * heuristic function 
+         * heuristic function - to estimate the cost of reaching a goal node from the current state
          */
-        public double HeuristicFunction(State state)
+        public int HeuristicFunction(Node node)
         {
-            
-            if (state == null)
+            int heuristicValue = 0;
+            // an admissible heuristic cannot overestimate the cost, so we use the lowest value in each category to estimate
+            int lowestChickenFish = 190;
+            int lowestBeefPork = 240;
+            int lowestBreakfast = 150;
+            int lowestSalad = 140;
+            int lowestSide = 15;
+            int lowestDessert = 45;
+            int lowestDrink = 80;
+            if (node.state == null)
+            {
+                return 1000; // - this should hopefully never happen but to stop it crashing in case?
+            }
+            // if the state cateogry is desserts it is a goal node, so estimated cost to a goal is 0
+            else if (node.state.Category == "Desserts")
             {
                 return 0;
             }
-            
+            else if (node.state.Category == "Breakfast")
+            {
+                heuristicValue = lowestDrink + lowestDessert;
+            }
+            else if (node.state.Category == "Chicken & Fish" || node.state.Category == "Beef & Pork" || node.state.Category == "Snacks")
+            {
+                // calories of main meal is path cost from root to meal, then heuristic is estimate from meal to dessert
+                // lowest cost from any of the main meal nodes will be the lowest value to side, then drink, then dessert
+                heuristicValue = lowestSide + lowestDrink + lowestDessert;
+            }
+            else if (node.state.Category == "Salads")
+            {
+                heuristicValue = lowestDrink + lowestDessert;
+            }
+            else if (node.state.Category == "Sides")
+            {
+                // heuristic value is average cost of all lowest beverages + lowest dessert
+                heuristicValue = lowestDrink + lowestDessert;
+            }
+            else if (node.state.Category == "Beverages" || node.state.Category == "Coffee & Tea" || node.state.Category == "Smoothies")
+            {
+                heuristicValue = lowestDessert;
+            }
+            return heuristicValue;
+
             /*
             // a check for the start state (you might want to handle this differently)
             if (state.Category.Equals("Breakfast"))
@@ -194,7 +246,7 @@ namespace FastFoodNutritionAI
             */
 
             //avoiding division by zero if protein is zero
-            if (state.Protein <= 0)
+            /*if (state.Protein <= 0)
             {
                 //Console.WriteLine("Heuristic Function called with a state having zero protein.");
                 return double.PositiveInfinity; //large number to indicate nonideal state
@@ -203,9 +255,9 @@ namespace FastFoodNutritionAI
                 double heuristicValue = 1 / ((double)state.Calories / state.Protein);
                 //Console.WriteLine($"Heuristic Function called for Item: {state.Item}, Category: {state.Category}, Calories: {state.Calories}, Protein: {state.Protein}, Heuristic Value: {heuristicValue}");
                 //favouring items with more protien per calorie
-                return heuristicValue;
-            
-            
+                return heuristicValue;*/
+
+
         }
     }
 }
