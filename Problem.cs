@@ -18,6 +18,7 @@ using System.CodeDom;
 using System.Xml.Linq;
 using static System.Windows.Forms.AxHost;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Windows.Forms.VisualStyles;
 
 namespace FastFoodNutritionAI
 {
@@ -67,7 +68,7 @@ namespace FastFoodNutritionAI
                     //Console.WriteLine(action.getResult().Item);
                 }
 
-            }
+            } 
             else if (state.Category == "Breakfast")
             {
                 foreach (State item in loadedMenuItems)
@@ -124,6 +125,7 @@ namespace FastFoodNutritionAI
             {
                 // dessert state so no possible actions
             }
+            
             return possible_actions;
         }
 
@@ -175,8 +177,35 @@ namespace FastFoodNutritionAI
          */
         public double HeuristicFunction(State state)
         {
-            //favouring items with more protien per calorie
-            return 1 / ((double)state.Calories / state.Protein);
+            
+            if (state == null)
+            {
+                return 0;
+            }
+            
+            /*
+            // a check for the start state (you might want to handle this differently)
+            if (state.Category.Equals("Breakfast"))
+            {
+                Console.WriteLine("Heuristic Function called with initial state.");
+                // a neutral heuristic value to  start state and allow expanding
+                return 0;
+            }
+            */
+
+            //avoiding division by zero if protein is zero
+            if (state.Protein <= 0)
+            {
+                Console.WriteLine("Heuristic Function called with a state having zero protein.");
+                return double.PositiveInfinity; //large number to indicate nonideal state
+            }
+
+                double heuristicValue = 1 / ((double)state.Calories / state.Protein);
+                //Console.WriteLine($"Heuristic Function called for Item: {state.Item}, Category: {state.Category}, Calories: {state.Calories}, Protein: {state.Protein}, Heuristic Value: {heuristicValue}");
+                //favouring items with more protien per calorie
+                return heuristicValue;
+            
+            
         }
     }
 }
