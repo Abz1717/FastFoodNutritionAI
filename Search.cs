@@ -40,8 +40,17 @@ namespace FastFoodNutritionAI
                     problem.goalStates.Add(item);
                 }
             }
-           //Node resultNode = breadth_first_tree_search(problem);
-           Node resultNode = GreedySearch(problem);
+
+
+            /*
+             * Search calls
+             */
+
+            //Node resultNode = breadth_first_tree_search(problem);
+            int limit = 5;
+            Node resultNode = DepthLimitedSearch(root, problem, limit);
+            //Node resultNode = GreedySearch(problem);
+           
 
 
             // get the path from the result to the root node
@@ -84,6 +93,55 @@ namespace FastFoodNutritionAI
                 }
             }
             return null;
+        }
+
+
+        /*
+        * Depth-Limited Search
+        */
+        public Node DepthLimitedSearch(Node node, Problem problem, int limit)
+        {
+            return RecursiveDLS(node, problem, limit);
+        }
+
+        /*
+         * Recursive Depth-Limited Search
+         */
+        private Node RecursiveDLS(Node node, Problem problem, int limit)
+        {
+            if (problem.goalTest(node.state))
+            {
+                Console.WriteLine("Goal Reached: " + node.state.Item);
+                return node;
+            }
+            else if (limit == 0)
+            {
+                return null; // cutoff
+            }
+            else
+            {
+                bool cutoffOccurred = false;
+                foreach (Node child in node.expand(problem))
+                {
+                    Node result = RecursiveDLS(child, problem, limit - 1);
+                    if (result == null || cutoffOccurred)
+                    {
+                        cutoffOccurred = true;
+                    }
+                    else if (result != null)
+                    {
+                        return result;
+                    }
+                }
+                if (cutoffOccurred)
+                {
+                    return null; // cutoff
+                }
+                else
+                {
+                    return null; // failure
+                }
+            }
         }
 
 
