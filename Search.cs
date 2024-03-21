@@ -8,6 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Wintellect.PowerCollections;
+using static FastFoodNutritionAI.Node;
+
+
 
 namespace FastFoodNutritionAI
 {
@@ -38,14 +42,19 @@ namespace FastFoodNutritionAI
             }
 
 
-            Node resultNode = breadth_first_tree_search(problem);
 
-            //int limit = 5;
-            //Node resultNode = DepthLimitedSearch(root, problem, limit);
+            /*
+             * Search calls
+             */
+
+            //Node resultNode = breadth_first_tree_search(problem);
+            int limit = 5;
+            Node resultNode = DepthLimitedSearch(root, problem, limit);
+            //Node resultNode = GreedySearch(problem);
 
 
             // get the path from the result to the root node
-            if (resultNode != null) 
+            if (resultNode != null)
             {
                 List<Node> solution = resultNode.path();
                 Console.WriteLine("Solution");
@@ -55,7 +64,7 @@ namespace FastFoodNutritionAI
                     {
                         Console.WriteLine("\n" + node.state.Item);
                     }
-                    
+
                 }
             }
         }
@@ -86,12 +95,127 @@ namespace FastFoodNutritionAI
             return null;
         }
 
+
+        /*
+        * Depth-Limited Search
+        */
+        public Node DepthLimitedSearch(Node node, Problem problem, int limit)
+        {
+            return RecursiveDLS(node, problem, limit);
+        }
+
+        /*
+         * Recursive Depth-Limited Search
+         */
+        private Node RecursiveDLS(Node node, Problem problem, int limit)
+        {
+            if (problem.goalTest(node.state))
+            {
+                Console.WriteLine("Goal Reached: " + node.state.Item);
+                return node;
+            }
+            else if (limit == 0)
+            {
+                return null; // cutoff
+            }
+            else
+            {
+                bool cutoffOccurred = false;
+                foreach (Node child in node.expand(problem))
+                {
+                    Node result = RecursiveDLS(child, problem, limit - 1);
+                    if (result == null || cutoffOccurred)
+                    {
+                        cutoffOccurred = true;
+                    }
+                    else if (result != null)
+                    {
+                        return result;
+                    }
+                }
+                if (cutoffOccurred)
+                {
+                    return null; // cutoff
+                }
+                else
+                {
+                    return null; // failure
+                }
+            }
+        }
+
+
         /**
          * Do greedy search
          */
-        private void GreedySearch(Problem problem)
+        public Node GreedySearch(Problem problem)
         {
+            OrderedBag<NodePriorityPair> frontier = new OrderedBag<NodePriorityPair>();
+            HashSet<State> explored = new HashSet<State>();
+            Console.WriteLine("Starting GreedySearch...");
 
+            /*
+            if (root.state == null)
+            {
+                Console.WriteLine("Root node's state is null.");
+                // Initialize root.state or handle the error appropriately before proceeding
+            }
+            else
+            {
+                // Add the root node to the frontier with initial priority
+                // You need to define `root` and `problem.HeuristicFunction`
+                //Console.WriteLine($"Adding root node to frontier with priority {problem.HeuristicFunction(root.state)}.");
+                frontier.Add(new NodePriorityPair(root, problem.HeuristicFunction(root.state)));
+            }
+            */
+            frontier.Add(new NodePriorityPair(root, problem.HeuristicFunction(root.state)));
+
+
+            while (frontier.Count > 0)
+            {
+                Console.WriteLine("Frontier count: " + frontier.Count);
+                // dequeu  node with highest priority - lowest num
+                NodePriorityPair currentPair = frontier.RemoveFirst();
+                Node currentNode = currentPair.Node;
+                //Console.WriteLine($"Exploring node: {currentNode.state.Item} with priority {currentPair.Priority}.");
+
+
+                if (problem.goalTest(currentNode.state))
+                {
+                    // Goal found
+                    Console.WriteLine("Goal found: " + currentNode.state.Item);
+                    return currentNode;
+                }
+
+                explored.Add(currentNode.state);
+
+                foreach (Node child in currentNode.expand(problem))
+                {
+                    if (child == null)
+                    {
+                        //Console.WriteLine("child is null in GreedySearch during expansion.");
+                        continue;
+                    }
+                    if (child.state == null)
+                    {
+                        //Console.WriteLine("Child state is null, skipping heuristic calculation and not adding to frontier.");
+                        continue;
+                    }
+                   // Console.WriteLine($"About to call HeuristicFunction with state: Item={child.state.Item}, Protein={child.state.Protein}, Calories={child.state.Calories}");
+
+                   // Console.WriteLine($"Expanding node: {currentNode.state.Item}, considering child: {child.state.Item}.");
+                    if (!explored.Contains(child.state) && !frontier.Any(np => np.Node.Equals(child)))
+                    {
+                        double priority = problem.HeuristicFunction(child.state);
+                        frontier.Add(new NodePriorityPair(child, priority));
+                    }
+                    // shouldnt be a need to check for updating nodes in the frontier with better paths,
+                    // as each node state is unique here.
+                }
+            }
+            Console.WriteLine("GreedySearch finished without finding a goal.");
+
+            return null; 
         }
 
         /*

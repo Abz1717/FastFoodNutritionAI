@@ -24,21 +24,22 @@ namespace FastFoodNutritionAI
 
         public string getStart()
         {
-            return start; 
+            return start;
         }
         public State getResult()
-        { 
+        {
             return result;
         }
 
-        public void setStart(string start) 
-        { 
-            this.start = start; 
+        public void setStart(string start)
+        {
+            this.start = start;
         }
 
-        public void setResult(State result) 
-        { 
-            this.result = result; 
+        public void setResult(State result)
+        {
+            this.result = result;
         }
+
     }
 }
