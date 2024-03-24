@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Wintellect.PowerCollections;
 using static FastFoodNutritionAI.Node;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace FastFoodNutritionAI
 {
@@ -19,12 +20,12 @@ namespace FastFoodNutritionAI
         private List<State> loadedMenuItems;
         Problem problem;
         Node root;
-
+        List<Node> visitedNodes = new List<Node>(); // list to store visited nodes
 
         /**
          * Set up to be able to search
          */
-        public void setUpSearch()
+        public (Node, List<Node>, List<Node>, Problem) setUpSearch(string algorithm)
         {
             loadedMenuItems = LoadMenuItems();
             root = new Node(null, 0, 0, null, null); // initialise root node
@@ -45,17 +46,38 @@ namespace FastFoodNutritionAI
              * Search calls
              */
 
-            //Node resultNode = breadth_first_graph_search(problem);
-            int limit = 5;
-            //Node resultNode = DepthLimitedSearch(root, problem, limit);
-            //Node resultNode = GreedySearch(problem);
-            Node resultNode = AStarSearch(problem);
+            Node resultNode;
+            if (algorithm == "BFGS")
+            {
+                resultNode = breadth_first_graph_search(problem);
+            }
+            else if (algorithm == "GS")
+            {
+                resultNode = GreedySearch(problem);
+            }
+            else if (algorithm == "DLS")
+            {
+                int limit = 4;
+                resultNode = DepthLimitedSearch(root, problem, limit);
+                Console.WriteLine("ResultNode is being assigned to DLS");
+            } 
+            else if(algorithm == "AS")
+            { 
+              
+                resultNode = AStarSearch(problem);
 
+            }
+            else
+            {
+                // default to AStarSearch if no valid algorithm is selected
+                resultNode = AStarSearch(problem);
+            }
+
+            List<Node> solution = resultNode.path();
 
             // get the path from the result to the root node
             if (resultNode != null)
-            {
-                List<Node> solution = resultNode.path();
+            { 
                 Console.WriteLine("Solution:");
                 foreach (Node node in solution)
                 {
@@ -66,6 +88,8 @@ namespace FastFoodNutritionAI
 
                 }
             }
+
+            return (root, visitedNodes, solution, problem); 
         }
 
         /*
@@ -82,6 +106,7 @@ namespace FastFoodNutritionAI
             if (node.state != null && problem.goalTest(node.state) == true)
             {
                 Console.WriteLine("Goal Reached: " + node.state.Item);
+                visitedNodes.Add(node); // Add the goal node to the visited nodes list
                 return node;
             }
             // if it is not a goal node, add it to the frontier
@@ -90,6 +115,7 @@ namespace FastFoodNutritionAI
             {
                 node = frontier.Dequeue();
                 explored.Add(node.state);
+                visitedNodes.Add(node); // add the current node to the visitedNodes list
                 // add all child nodes to the frontier
                 foreach (Node child in node.expand(problem))
                 {
@@ -99,6 +125,7 @@ namespace FastFoodNutritionAI
                         if (problem.goalTest(child.state) == true)
                         {
                             Console.WriteLine("Goal Reached: " + child.state.Item);
+                            visitedNodes.Add(child); // Add the goal node to the visited nodes list
                             return child;
                         }
                         frontier.Enqueue(child);
@@ -123,6 +150,9 @@ namespace FastFoodNutritionAI
          */
         private Node RecursiveDLS(Node node, Problem problem, int limit)
         {
+
+            visitedNodes.Add(node); // add current node to visitedNodes
+
             if (problem.goalTest(node.state))
             {
                 Console.WriteLine("Goal Reached: " + node.state.Item);
@@ -194,10 +224,12 @@ namespace FastFoodNutritionAI
                 {
                     // Goal found
                     Console.WriteLine("Goal found: " + currentNode.state.Item);
+                    visitedNodes.Add(currentNode); // add the current node to the visitedNodes list
                     return currentNode;
                 }
 
                 explored.Add(currentNode.state);
+                visitedNodes.Add(currentNode); // add the current node to the visitedNodes list
 
                 foreach (Node child in currentNode.expand(problem))
                 {
@@ -267,6 +299,7 @@ namespace FastFoodNutritionAI
                 {
                     // Goal found
                     Console.WriteLine("Goal found: " + currentNode.state.Item);
+                    visitedNodes.Add(currentNode); // add the current node to the visited nodes list
                     return currentNode;
                 }
 
@@ -295,6 +328,8 @@ namespace FastFoodNutritionAI
                     // shouldnt be a need to check for updating nodes in the frontier with better paths,
                     // as each node state is unique here.
                 }
+
+                visitedNodes.Add(currentNode); // add the current node to the visited nodes list
             }
             Console.WriteLine("GreedySearch finished without finding a goal.");
 
