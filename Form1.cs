@@ -41,7 +41,7 @@ namespace FastFoodNutritionAI
             // add columns to the DataGridView
             dataGridView1.Columns.Add("Depth", "Depth");
             dataGridView1.Columns.Add("Item", "Item");
-            dataGridView1.Columns.Add("Protein", "Protein");
+            dataGridView1.Columns.Add("Heuristic", "Heuristic");
             dataGridView1.Columns.Add("Calories", "Calories");
             dataGridView1.Columns.Add("Category", "Category"); // Add Category column
             dataGridView1.Columns.Add("Goal Test", "Goal Test"); // Add Category column
@@ -50,7 +50,7 @@ namespace FastFoodNutritionAI
             // adjust column width
             dataGridView1.Columns["Depth"].Width = 50;
             dataGridView1.Columns["Item"].Width = 300;
-            dataGridView1.Columns["Protein"].Width = 100;
+            dataGridView1.Columns["Heuristic"].Width = 100;
             dataGridView1.Columns["Calories"].Width = 100;
             dataGridView1.Columns["Category"].Width = 100; 
             dataGridView1.Columns["Goal Test"].Width = 100; 
@@ -140,6 +140,7 @@ namespace FastFoodNutritionAI
             this.visitedNodes = visitedNodes; 
             this.solution = solution; 
 
+
             // display visited nodes info to console to check
             Console.WriteLine("displaying info on the visited nodes...:");
             foreach (Node visitedNode in visitedNodes)
@@ -148,7 +149,7 @@ namespace FastFoodNutritionAI
                 {
                     Console.WriteLine("Depth: " + visitedNode.depth);
                     Console.WriteLine("Item: " + visitedNode.state.Item);
-                    Console.WriteLine("Protein: " + visitedNode.state.Protein);
+                    Console.WriteLine("Heuristic: " + problem.HeuristicFunction(visitedNode));
                     Console.WriteLine("Calories: " + visitedNode.state.Calories);
                     Console.WriteLine("Category: " + visitedNode.state.Category);
                 }
@@ -175,7 +176,7 @@ namespace FastFoodNutritionAI
                 {
                     // add the row to the grid
                     int rowIndex = dataGridView1.Rows.Add(visitedNode.depth,
-                   visitedNode.state.Item, visitedNode.state.Protein,
+                   visitedNode.state.Item, problem.HeuristicFunction(visitedNode),
                     visitedNode.state.Calories, visitedNode.state.Category,
                     "Fail" // default value for Goal Test column
                    );
