@@ -1,4 +1,14 @@
-﻿using CsvHelper.Configuration;
+﻿/**
+*  AI Assignmnet Group 2
+* Team members:
+* - Marylou das Chagas e Silva 2501402
+* - Lirit Dampier 2560877 
+* - Laura Clark 2419746
+* - Adam Munro 2455360
+* - Abz Mohamed 245757
+*/
+
+using CsvHelper.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
