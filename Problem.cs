@@ -24,6 +24,7 @@ namespace FastFoodNutritionAI
 {
     /**
      * Class to define a formal problem
+     * function outlines taken from - https://github.com/aimacode/aima-python
      */
     public class Problem
     {
@@ -40,7 +41,7 @@ namespace FastFoodNutritionAI
             this.goalStates = goals;
         }
 
-        /**
+        /*
 		 * Return the actions that can be executed in the given state
 		 * result should be a list of actions that can be performed at the given state
 		 * loaded menu items is the list of menu items that have been loaded ready to use
@@ -182,6 +183,7 @@ namespace FastFoodNutritionAI
 
         /*
          * heuristic function - to estimate the cost of reaching a goal node from the current state
+         * node - the node that we want to estimate the cost to the goal from
          */
         public int HeuristicFunction(Node node)
         {

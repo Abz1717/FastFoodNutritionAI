@@ -15,9 +15,13 @@ using System.Xml.Linq;
 
 namespace FastFoodNutritionAI
 {
+    /*
+     * Search class where search functions are written and called
+     * search function implementations from - https://github.com/aimacode/aima-python
+     */
     public class Search
     {
-        public List<State> loadedMenuItems;
+        private List<State> loadedMenuItems;
         Problem problem;
         Node root;
         List<Node> visitedNodes = new List<Node>(); // list to store visited nodes
@@ -203,6 +207,7 @@ namespace FastFoodNutritionAI
         // search by choosing for the node with the lowest value of path cost to that node + estimated value from that node
         private Node AStarSearch(Problem problem)
         {
+            // ordered bag implementation from here - https://github.com/timdetering/Wintellect.PowerCollections
             OrderedBag<NodePriorityPair> frontier = new OrderedBag<NodePriorityPair>();
             HashSet<State> explored = new HashSet<State>();
             Console.WriteLine("Starting AStarSearch...");
@@ -216,8 +221,6 @@ namespace FastFoodNutritionAI
             else
             {
                 // Add the root node to the frontier with initial priority
-                // You need to define `root` and `problem.HeuristicFunction`
-                //Console.WriteLine($"Adding root node to frontier with priority {problem.HeuristicFunction(root.state)}.");
                 frontier.Add(new NodePriorityPair(root, problem.HeuristicFunction(root) + root.pathCost));
             }
 
@@ -255,12 +258,9 @@ namespace FastFoodNutritionAI
                         //Console.WriteLine("Child state is null, skipping heuristic calculation and not adding to frontier.");
                         continue;
                     }
-                    // Console.WriteLine($"About to call HeuristicFunction with state: Item={child.state.Item}, Protein={child.state.Protein}, Calories={child.state.Calories}");
-
-                    // Console.WriteLine($"Expanding node: {currentNode.state.Item}, considering child: {child.state.Item}.");
                     if (!explored.Contains(child.state) && !frontier.Any(np => np.Node.Equals(child)))
                     {
-                        // add path cost for priority for A star
+                        // add path cost and heurisitc for priority for A star
                         double priority = problem.HeuristicFunction(child)+ child.pathCost;
                         frontier.Add(new NodePriorityPair(child, priority));
                     }
@@ -278,6 +278,7 @@ namespace FastFoodNutritionAI
          */
         public Node GreedySearch(Problem problem)
         {
+            // ordered bag implementation from here - https://github.com/timdetering/Wintellect.PowerCollections
             OrderedBag<NodePriorityPair> frontier = new OrderedBag<NodePriorityPair>();
             HashSet<State> explored = new HashSet<State>();
             Console.WriteLine("Starting GreedySearch...");
