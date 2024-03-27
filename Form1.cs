@@ -30,9 +30,7 @@ namespace FastFoodNutritionAI
         private List<int> rowsToHighlight = new List<int>();
         int totalPathCost = 0;
         private Problem problem;
-
-
-
+        private bool heuristic;
 
         public Form1()
         {
@@ -106,23 +104,27 @@ namespace FastFoodNutritionAI
         private void btnDLS_Click(object sender, EventArgs e)
         {
             Console.WriteLine("DLS IS CLICKED!");
+            heuristic = false;
             handleButtonClick("DLS", sender as Button);
         }
 
         private void btnGS_Click(object sender, EventArgs e)
         {
             Console.WriteLine("GS IS CLICKED!");
+            heuristic = true;
             handleButtonClick("GS", sender as Button);
         }
 
         private void btnBFGS_Click(object sender, EventArgs e)
         {
             Console.WriteLine("BFGS IS CLICKED!");
+            heuristic = false;
             handleButtonClick("BFGS", sender as Button);
         }
         private void btnAS_Click(object sender, EventArgs e)
         {
             Console.WriteLine("AS IS CLICKED!");
+            heuristic = true;
             handleButtonClick("AS", sender as Button);
         }
 
@@ -149,7 +151,10 @@ namespace FastFoodNutritionAI
                 {
                     Console.WriteLine("Depth: " + visitedNode.depth);
                     Console.WriteLine("Item: " + visitedNode.state.Item);
-                    Console.WriteLine("Heuristic: " + problem.HeuristicFunction(visitedNode));
+                    if (heuristic == true)
+                    {
+                        Console.WriteLine("Heuristic: " + problem.HeuristicFunction(visitedNode));
+                    }
                     Console.WriteLine("Calories: " + visitedNode.state.Calories);
                     Console.WriteLine("Category: " + visitedNode.state.Category);
                 }
@@ -174,12 +179,25 @@ namespace FastFoodNutritionAI
 
                 if (visitedNode.state != null)
                 {
+                    int rowIndex;
                     // add the row to the grid
-                    int rowIndex = dataGridView1.Rows.Add(visitedNode.depth,
+                    if (heuristic == true)
+                    {
+                        rowIndex = dataGridView1.Rows.Add(visitedNode.depth,
                    visitedNode.state.Item, problem.HeuristicFunction(visitedNode),
                     visitedNode.state.Calories, visitedNode.state.Category,
                     "Fail" // default value for Goal Test column
                    );
+                    }
+                    else
+                    {
+                        rowIndex = dataGridView1.Rows.Add(visitedNode.depth,
+                   visitedNode.state.Item, "-",
+                    visitedNode.state.Calories, visitedNode.state.Category,
+                    "Fail" // default value for Goal Test column
+                   );
+                    }
+                    
 
                     // check if the visitedNode is in the solution
                     if (solution.Contains(visitedNode))

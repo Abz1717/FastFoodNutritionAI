@@ -34,12 +34,12 @@ namespace FastFoodNutritionAI
         /*
          * List all of the nodes reachable in one step from this node
          */
-        public List<Node> expand(Problem problem)
+        public List<Node> expand(Problem problem, List<State> loadedItems)
         {
             // frontier is the list of all nodes one step away from this node
             List<Node> frontier = new List<Node>();
             // create a child node for every possible action from this state
-            foreach (Action action in problem.actions(this.state))
+            foreach (Action action in problem.actions(this.state, loadedItems))
             {
                 //Console.WriteLine("Expanded actions:");
                 // Console.WriteLine(action.getResult().Item);

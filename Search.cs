@@ -17,17 +17,29 @@ namespace FastFoodNutritionAI
 {
     public class Search
     {
-        private List<State> loadedMenuItems;
+        public List<State> loadedMenuItems;
         Problem problem;
         Node root;
         List<Node> visitedNodes = new List<Node>(); // list to store visited nodes
+
+        public void setLoadedMenuItems(List<State> items)
+        {
+            loadedMenuItems = items;
+        }
+
+        public List<State> getLoadedMenuItems()
+        {
+            return loadedMenuItems;
+        }
 
         /**
          * Set up to be able to search
          */
         public (Node, List<Node>, List<Node>, Problem) setUpSearch(string algorithm)
         {
-            loadedMenuItems = LoadMenuItems();
+            //loadedMenuItems = LoadMenuItems();
+            setLoadedMenuItems(LoadMenuItems());
+            Console.WriteLine("Menu loaded");
             root = new Node(null, 0, 0, null, null); // initialise root node
             List<State> goals = new List<State>();
             problem = new Problem(root.state, goals);
@@ -117,7 +129,7 @@ namespace FastFoodNutritionAI
                 explored.Add(node.state);
                 visitedNodes.Add(node); // add the current node to the visitedNodes list
                 // add all child nodes to the frontier
-                foreach (Node child in node.expand(problem))
+                foreach (Node child in node.expand(problem, loadedMenuItems))
                 {
                     // check if the child has already been explored or is already on the frontier before adding 
                     if (explored.Contains(child.state) == false && frontier.Contains(child) == false)
@@ -165,7 +177,7 @@ namespace FastFoodNutritionAI
             else
             {
                 bool cutoffOccurred = false;
-                foreach (Node child in node.expand(problem))
+                foreach (Node child in node.expand(problem, loadedMenuItems))
                 {
                     Node result = RecursiveDLS(child, problem, limit - 1);
                     if (result == null || cutoffOccurred)
@@ -231,7 +243,7 @@ namespace FastFoodNutritionAI
                 explored.Add(currentNode.state);
                 visitedNodes.Add(currentNode); // add the current node to the visitedNodes list
 
-                foreach (Node child in currentNode.expand(problem))
+                foreach (Node child in currentNode.expand(problem, loadedMenuItems))
                 {
                     if (child == null)
                     {
@@ -305,7 +317,7 @@ namespace FastFoodNutritionAI
 
                 explored.Add(currentNode.state);
 
-                foreach (Node child in currentNode.expand(problem))
+                foreach (Node child in currentNode.expand(problem, loadedMenuItems))
                 {
                     if (child == null)
                     {
@@ -338,6 +350,7 @@ namespace FastFoodNutritionAI
 
         /*
          * Load all of the menu items into a list
+         * used csv helper to load in - https://joshclose.github.io/CsvHelper/getting-started/
          */
         public List<State> LoadMenuItems()
         {

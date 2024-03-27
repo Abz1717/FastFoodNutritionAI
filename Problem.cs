@@ -42,12 +42,11 @@ namespace FastFoodNutritionAI
 
         /**
 		 * Return the actions that can be executed in the given state
-		 * result should be a list
+		 * result should be a list of actions that can be performed at the given state
+		 * loaded menu items is the list of menu items that have been loaded ready to use
 		 */
-        public List<Action> actions(State state)
+        public List<Action> actions(State state, List<State> loadedMenuItems)
         {
-            Search search = new Search();
-            List<State> loadedMenuItems = search.LoadMenuItems();
             List<Action> possible_actions = new List<Action>();
             // for the root node, add all paths to main meal nodes as potential action
             if (state == null)
@@ -60,14 +59,6 @@ namespace FastFoodNutritionAI
                         possible_actions.Add(newAction);
                     }
                 }
-                // display possible items to move to
-                Console.WriteLine("Actions:");
-                foreach (Action action in possible_actions)
-                {
-                    // prints correct here
-                    //Console.WriteLine(action.getResult().Item);
-                }
-
             }
             else if (state.Category == "Breakfast")
             {
@@ -144,10 +135,11 @@ namespace FastFoodNutritionAI
             return possible_actions;
         }
 
-        /**
-		 * Return the state that results from executing the given
-		 * action in the given state
-		 * The action must be one of this.actions(state).
+        /*
+		 * Return the state that results from executing the given action in the given state
+		 * state - the starting state the action is performed in
+		 * action - the action performed on the state
+		 * return - the resulting state
 		 */
         public State result(State state, Action action)
         {
@@ -158,6 +150,7 @@ namespace FastFoodNutritionAI
 
         /*
 		 * Check if a given state is a goal state by comparing to all goal states
+		 * state - the state we are checking if it is a goal state or not
 		*/
         public bool goalTest(State state)
         {
@@ -194,10 +187,6 @@ namespace FastFoodNutritionAI
         {
             int heuristicValue = 0;
             // an admissible heuristic cannot overestimate the cost, so we use the lowest value in each category to estimate
-            int lowestChickenFish = 190;
-            int lowestBeefPork = 240;
-            int lowestBreakfast = 150;
-            int lowestSalad = 140;
             int lowestSide = 15;
             int lowestDessert = 45;
             int lowestDrink = 80;
@@ -234,29 +223,6 @@ namespace FastFoodNutritionAI
                 heuristicValue = lowestDessert;
             }
             return heuristicValue;
-
-            /*
-            // a check for the start state (you might want to handle this differently)
-            if (state.Category.Equals("Breakfast"))
-            {
-                Console.WriteLine("Heuristic Function called with initial state.");
-                // a neutral heuristic value to  start state and allow expanding
-                return 0;
-            }
-            */
-
-            //avoiding division by zero if protein is zero
-            /*if (state.Protein <= 0)
-            {
-                //Console.WriteLine("Heuristic Function called with a state having zero protein.");
-                return double.PositiveInfinity; //large number to indicate nonideal state
-            }
-
-                double heuristicValue = 1 / ((double)state.Calories / state.Protein);
-                //Console.WriteLine($"Heuristic Function called for Item: {state.Item}, Category: {state.Category}, Calories: {state.Calories}, Protein: {state.Protein}, Heuristic Value: {heuristicValue}");
-                //favouring items with more protien per calorie
-                return heuristicValue;*/
-
 
         }
     }
