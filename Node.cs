@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace FastFoodNutritionAI
 {
 
-    /**
+    /*
      * A node in the search tree contains a pointer to the parent and also the actual state for this node
-     * includes the action that led to this node and also the total path cost to reach the node
-     * each menu item is a node
+     * includes the action that led to this node and also the total path cost to reach the node as well as the parent and depth of the node
+     * function outlines taken from - https://github.com/aimacode/aima-python
      */
     public class Node
     {
@@ -50,19 +50,21 @@ namespace FastFoodNutritionAI
             return frontier;
         }
 
-        /**
+        /*
          * Create and return a child node
+         * problem - the problem definition we are using
+         * action - the action that led to the child node
          */
         public Node childNode(Problem problem, Action action)
         {
             // get the state of the next node
             State next_state = problem.result(this.state, action);
-            /*
+            
             if (next_state == null)
             {
                 throw new InvalidOperationException("Next state cant be null.");
             }
-            */
+            
             // get the next node
             Node next_node = new Node(next_state, problem.path_cost(this.pathCost, this.state, action, next_state), this.depth + 1, this, action);
             return next_node;
@@ -95,48 +97,5 @@ namespace FastFoodNutritionAI
             }
             return actionList;
         }
-
-
-        
-        public class NodePriorityPair : IComparable<NodePriorityPair>
-        {
-            public Node Node { get; private set; }
-            public double Priority { get; private set; } 
-
-            public NodePriorityPair(Node node, double priority)
-            {
-                Node = node;
-                Priority = priority;
-            }
-
-            public int CompareTo(NodePriorityPair other)
-            {
-                //a lower numeric value indicates higher priority
-                return Priority.CompareTo(other.Priority);
-            }
-        }
-
-
-
-
-        // list of menu items that make a meal
-        /* public List<MenuItem> Meal { get; private set; } = new List<MenuItem>();
-         // sum of calories accross each all items in the meal
-         public double TotalCalories { get; private set; }
-
-         // IEnumerable allows us to iterate over a collection
-         public Node(IEnumerable<MenuItem> meal)
-         {
-             Meal = new List<MenuItem>(meal);
-             TotalCalories = Meal.Sum(item => item.Calories);
-         }
-
-         // makes new node by adding menuitem to current meal, giving a new potential 
-         public Node AddItem(MenuItem item)
-         {
-             var newMeal = new List<MenuItem>(Meal) { item };   // list of menu items starting with items in current meal 
-             return new Node(newMeal);
-
-         }*/
     }
 }
